@@ -2,7 +2,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { UserPayload } from '../types/express/index.d'; // Importamos o tipo se necessário em outros lugares
 
 dotenv.config();
 
@@ -22,14 +21,17 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             res.status(403).json({ message: 'Invalid or expired token.' });
             return;
         }
-        // Agora o TypeScript sabe que req.user existe!
-        req.user = user as UserPayload;
+        // O TypeScript agora entende isso globalmente, sem precisar de importação aqui
+        req.user = user as Express.User;
         next();
     });
 };
 
 export const authorizeAdmin = (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user || !req.user.isAdmin) {
+    // Acessamos as propriedades de forma segura, pois o tipo pode variar
+    const userIsAdmin = req.user && 'isAdmin' in req.user && req.user.isAdmin;
+
+    if (!userIsAdmin) {
         res.status(403).json({ message: 'Admin access required.' });
         return;
     }

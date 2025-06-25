@@ -1,5 +1,5 @@
 // src/services/geminiService.ts
-import { GoogleGenerativeAI } from '@google/genai';
+import * as genai from '@google/genai';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,7 +10,8 @@ if (!apiKey) {
     throw new Error('GEMINI_API_KEY não está definida no ambiente do servidor.');
 }
 
-const genAI = new GoogleGenerativeAI(apiKey);
+// Acessa a classe através do namespace importado
+const genAI = new genai.GoogleGenerativeAI(apiKey);
 
 export const generatePackingTips = async (prompt: string): Promise<string> => {
     try {
