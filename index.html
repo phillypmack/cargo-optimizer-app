@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Cargo Optimizer</title>
+    <script type="module" src="/src/index.tsx"></script>
+    <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^0.7.0",
+    "three": "https://esm.sh/three@0.160.0",
+    "three/addons/controls/OrbitControls.js": "https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js",
+    "three/addons/exporters/OBJExporter.js": "https://esm.sh/three@0.160.0/examples/jsm/exporters/OBJExporter.js",
+    "jspdf": "https://esm.sh/jspdf@^2.5.1",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
+    "jspdf-autotable": "https://esm.sh/jspdf-autotable@^3.8.2",
+    "xlsx": "https://esm.sh/xlsx@^0.18.5",
+    "chart.js": "https://esm.sh/chart.js@^4.4.1",
+    "three/": "https://esm.sh/three@^0.177.0/"
+  }
+}
+</script>
+    <script type="module" src="/src/index.tsx"></script>
+</head>
+
+<body>
+    <div id="auth-container" class="hidden">
+        <div id="login-form-container" class="auth-form-container">
+            <h2>Login</h2>
+            <p id="auth-message" class="auth-message"></p>
+            <form id="login-form">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" name="login-email" required>
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" name="login-password" required>
+                <button type="submit" id="login-button">Login</button>
+                <button type="button" id="login-google-button" class="google-button">Login with Google</button>
+                <p class="auth-switch">Need an account? <a href="#" id="show-register-link">Register</a></p>
+            </form>
+        </div>
+
+        <div id="register-form-container" class="auth-form-container hidden">
+            <h2>Create Account</h2>
+            <form id="register-form">
+                <label for="register-email">Email:</label>
+                <input type="email" id="register-email" name="register-email" required>
+                <label for="register-password">Password:</label>
+                <input type="password" id="register-password" name="register-password" required>
+                <label for="register-confirm-password">Confirm Password:</label>
+                <input type="password" id="register-confirm-password" name="register-confirm-password" required>
+                <button type="submit" id="register-button">Register</button>
+                <button type="button" id="register-google-button" class="google-button">Register with Google</button>
+                <p class="auth-switch">Already have an account? <a href="#" id="show-login-link">Login</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="verify-email-form-container" class="auth-form-container hidden">
+        <h2>Verify Your Email</h2>
+        <p>Please enter the token sent to your email address.</p>
+        <form id="verify-email-form">
+            <label for="verification-token">Verification Token:</label>
+            <input type="text" id="verification-token" name="verification-token" required>
+            <button type="submit">Verify Email</button>
+            <p class="auth-switch">Go back to <a href="#" class="show-login-link">Login</a></p>
+        </form>
+    </div>
+
+    <div id="app-container" class="hidden">
+        <header>
+            <div class="header-main-content">
+                <h1 id="main-header-title">3D Cargo Optimizer</h1>
+                <div class="header-nav-links">
+                    <a href="#" id="admin-panel-link" class="header-link hidden">Admin Panel</a>
+                </div>
+            </div>
+            <div class="header-aux-content">
+                <div id="trial-info-banner" class="trial-banner hidden">
+                    <span>You have <span id="trial-simulations-remaining">5</span> free simulations remaining.</span>
+                    <a href="#" id="header-login-link">Login</a> or <a href="#" id="header-register-link">Register</a>
+                    for unlimited access.
+                </div>
+                <button id="logout-button" class="secondary-button hidden">Logout</button>
+            </div>
+        </header>
+        <main>
+            <aside id="controls-panel">
+                <h2 class="controls-panel-main-title">Controls</h2>
+
+                <section class="collapsible-section">
+                    <h3>
+                        <button class="collapsible-toggle-button" aria-expanded="true" aria-controls="setup-content">
+                            Container & Algorithm Setup
+                            <span class="collapsible-icon" aria-hidden="true">▼</span>
+                        </button>
+                    </h3>
+                    <div id="setup-content" class="collapsible-content">
+                        <h4>Container Specifications</h4>
+                        <label for="container-type-select">Select Container Type:</label>
+                        <select id="container-type-select" name="container-type-select"></select>
+
+                        <label for="container-length">Length (m) per Container:</label>
+                        <input type="number" id="container-length" name="container-length" value="12" step="0.1"
+                            min="0.1">
+                        <label for="container-width">Width (m) per Container:</label>
+                        <input type="number" id="container-width" name="container-width" value="2.3" step="0.1"
+                            min="0.1">
+                        <label for="container-height">Height (m) per Container:</label>
+                        <input type="number" id="container-height" name="container-height" value="2.3" step="0.1"
+                            min="0.1">
+
+                        <label for="container-max-payload-display">Max Useful Load (kg) per Container:</label>
+                        <span id="container-max-payload-display">N/A</span>
+
+                        <label for="number-of-containers">Number of Containers:</label>
+                        <select id="number-of-containers" name="number-of-containers">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                        </select>
+
+                        <h4>Output Details</h4>
+                        <label for="company-logo-upload">Company Logo (for PDF Report):</label>
+                        <input type="file" id="company-logo-upload" name="company-logo-upload"
+                            accept="image/png, image/jpeg">
+
+                        <label for="shipment-reference">Shipment Reference:</label>
+                        <input type="text" id="shipment-reference" name="shipment-reference"
+                            placeholder="e.g., Homegoods PO#123">
+
+                        <h4>Packing Algorithm</h4>
+                        <div id="algorithm-choice-group" role="radiogroup" aria-labelledby="algorithm-choice-label">
+                            <label id="algorithm-choice-label" class="sr-only">Packing Algorithm:</label>
+                            <div>
+                                <input type="radio" id="algo-ffd" name="algorithm-choice" value="ffd" checked>
+                                <label for="algo-ffd">First Fit Decreasing (FFD)</label>
+                            </div>
+                            <div>
+                                <input type="radio" id="algo-bfd" name="algorithm-choice" value="bfd">
+                                <label for="algo-bfd">Best Fit Decreasing (BFD)</label>
+                            </div>
+                            <p class="algorithm-description">FFD and BFD are deterministic heuristic algorithms that
+                                attempt to find good packing solutions quickly. If 2 containers are selected, the
+                                algorithm packs one fully before moving to the next.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="collapsible-section">
+                    <h3>
+                        <button class="collapsible-toggle-button" aria-expanded="true"
+                            aria-controls="item-management-master-content">
+                            Item Management & List
+                            <span class="collapsible-icon" aria-hidden="true">▼</span>
+                        </button>
+                    </h3>
+                    <div id="item-management-master-content" class="collapsible-content">
+                        <h4 class="sub-section-heading">Define New or Edit Item</h4>
+                        <form id="add-item-form">
+                            <label for="item-name">Item Name:</label>
+                            <input type="text" id="item-name" name="item-name" placeholder="e.g., Box A">
+
+                            <div id="item-shape-selector" role="radiogroup" aria-labelledby="item-shape-label">
+                                <label id="item-shape-label">Item Shape:</label>
+                                <div>
+                                    <input type="radio" id="item-shape-box" name="item-shape" value="box" checked>
+                                    <label for="item-shape-box">Box</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="item-shape-cylinder" name="item-shape" value="cylinder">
+                                    <label for="item-shape-cylinder">Cylinder</label>
+                                </div>
+                            </div>
+
+                            <label for="item-dimension1" id="item-dimension1-label">Length (m):</label>
+                            <input type="number" id="item-dimension1" name="item-dimension1" placeholder="0.5"
+                                step="0.01" min="0.01">
+
+                            <label for="item-dimension2" id="item-dimension2-label">Width (m):</label>
+                            <input type="number" id="item-dimension2" name="item-dimension2" placeholder="0.3"
+                                step="0.01" min="0.01">
+
+                            <label for="item-height">Height (m):</label>
+                            <input type="number" id="item-height" name="item-height" placeholder="0.2" step="0.01"
+                                min="0.01">
+
+                            <label for="item-weight">Weight (kg):</label>
+                            <input type="number" id="item-weight" name="item-weight" placeholder="e.g., 100" step="0.1"
+                                min="0">
+
+                            <label for="item-quantity">Quantity:</label>
+                            <input type="number" id="item-quantity" name="item-quantity" value="1" min="1">
+
+                            <div>
+                                <input type="checkbox" id="item-use-random-color" name="item-use-random-color" checked>
+                                <label for="item-use-random-color" class="checkbox-label">Use Random Pastel
+                                    Color</label>
+                            </div>
+
+                            <label for="item-color">Item Color (if not random):</label>
+                            <input type="color" id="item-color" name="item-color" value="#cccccc">
+
+                            <div>
+                                <input type="checkbox" id="item-non-stackable" name="item-non-stackable">
+                                <label for="item-non-stackable" class="checkbox-label">Non-Stackable (nothing on
+                                    top)</label>
+                            </div>
+
+                            <div id="item-rotation-preference" role="group" aria-labelledby="item-rotation-label">
+                                <label id="item-rotation-label">Rotation Preferences (3D Preview):</label>
+                                <div>
+                                    <input type="checkbox" id="rot-allowX" name="rotation-preference-x" value="allowX">
+                                    <label for="rot-allowX">Allow X-axis (90°) <span class="rot-icon">[X
+                                            Rot]</span></label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="rot-allowY" name="rotation-preference-y" value="allowY">
+                                    <label for="rot-allowY">Allow Y-axis (90°) <span class="rot-icon">[Y
+                                            Rot]</span></label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="rot-allowZ" name="rotation-preference-z" value="allowZ">
+                                    <label for="rot-allowZ">Allow Z-axis (90°) <span class="rot-icon">[Z
+                                            Rot]</span></label>
+                                </div>
+                            </div>
+
+                            <button type="button" id="addItemButton">Add Item to List</button>
+                            <button type="button" id="cancelEditButton" class="secondary-button"
+                                style="display: none;">Cancel Edit</button>
+                        </form>
+
+                        <h4 class="sub-section-heading">Current Item List</h4>
+                        <div id="item-list-container" aria-live="polite" aria-relevant="additions removals text">
+                            <p>No items added yet.</p>
+                        </div>
+                        <button type="button" id="clearCachedItemsButton" class="secondary-button warning-button">Clear
+                            Saved Items</button>
+
+                        <h4 class="sub-section-heading">Import/Export List via XLSX</h4>
+                        <button type="button" id="exportXLSXTemplateButton" class="secondary-button">Download XLSX
+                            Template</button>
+
+                        <label for="import-xlsx-file" class="file-input-label">Select XLSX file to import:</label>
+                        <input type="file" id="import-xlsx-file" name="import-xlsx-file"
+                            accept=".xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                        <button type="button" id="importXLSXButton" class="secondary-button">Import Items from
+                            XLSX</button>
+                    </div>
+                </section>
+
+                <section class="collapsible-section">
+                    <h3>
+                        <button class="collapsible-toggle-button" aria-expanded="true"
+                            aria-controls="actions-reports-content">
+                            Generate Previews & Reports
+                            <span class="collapsible-icon" aria-hidden="true">▼</span>
+                        </button>
+                    </h3>
+                    <div id="actions-reports-content" class="collapsible-content">
+                        <button type="button" id="optimizeLoadButton">Generate 3D Packing Preview</button>
+                        <button type="button" id="getPackingTipsButton">Get Packing Tips (AI)</button>
+                        <button type="button" id="downloadReportButton" class="secondary-button" disabled>Download PDF
+                            Report</button>
+                        <button type="button" id="exportOBJButton" class="secondary-button" disabled>Export 3D Model
+                            (.obj)</button>
+                    </div>
+                </section>
+            </aside>
+            <section id="viewport-container" aria-labelledby="viewport-heading">
+                <h2 id="viewport-heading" class="sr-only">3D Viewport</h2>
+                <div id="viewport-placeholder">
+                    <!-- Canvas for 3D rendering will be inserted here by Three.js -->
+                </div>
+            </section>
+        </main>
+        <aside id="details-panel" aria-live="polite">
+            <h2>Details & Reports</h2>
+            <p>3D packing summaries and AI-generated tips will appear here. Select an algorithm and click "Generate 3D
+                Packing Preview".</p>
+        </aside>
+        <footer>
+            <p>&copy; 2024 Cargo Optimizer Inc. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <div id="admin-container" class="hidden">
+        <header>
+            <div class="header-main-content">
+                <h1 id="admin-header-title">Admin Dashboard</h1>
+                <div class="header-nav-links">
+                    <a href="#" id="admin-back-to-app-link" class="header-link">Back to App</a>
+                </div>
+            </div>
+            <div class="header-aux-content">
+                <button id="admin-logout-button" class="secondary-button">Logout</button>
+            </div>
+        </header>
+        <main id="admin-main-content">
+            <nav id="admin-menu">
+                <ul>
+                    <li><a href="#" id="admin-menu-dashboard" class="admin-menu-item active"
+                            aria-current="page">Dashboard</a></li>
+                    <li><a href="#" id="admin-menu-charts" class="admin-menu-item">Charts</a></li>
+                </ul>
+            </nav>
+            <div id="admin-content-area">
+                <section id="admin-dashboard-content" class="admin-page-content">
+                    <section id="admin-user-management" class="admin-sub-section">
+                        <h2>User Management</h2>
+                        <div id="admin-user-list-container">
+                            <p>Loading user data...</p>
+                        </div>
+                    </section>
+                    <section id="admin-app-statistics" class="admin-sub-section">
+                        <h2>App Statistics</h2>
+                        <div id="admin-stats-container">
+                            <p>Loading statistics...</p>
+                        </div>
+                    </section>
+                </section>
+                <section id="admin-charts-content" class="admin-page-content hidden">
+                    <h2>Application Charts</h2>
+                    <div class="admin-charts-grid">
+                        <div class="chart-card">
+                            <h3>Usage by Period</h3>
+                            <div id="usage-by-period-chart-container">
+                                <canvas id="usageByPeriodChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>User Distribution by Country</h3>
+                            <div id="user-world-map-container">
+                                <!-- Placeholder for world map or list -->
+                                <p>World map data will appear here.</p>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>User Usage Recurrence</h3>
+                            <div id="user-recurrence-chart-container">
+                                <canvas id="userRecurrenceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Average Reports Generated</h3>
+                            <div id="avg-reports-chart-container">
+                                <p>Average reports data will appear here.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+        <footer id="admin-footer">
+            <p>&copy; 2024 Cargo Optimizer Inc. Admin Panel.</p>
+        </footer>
+    </div>
+
+    <div id="item-tooltip"></div>
+    <script type="module" src="/src/index.tsx"></script>
+    <script type="module" src="/src/index.tsx"></script>
+</body>
+
+</html>
