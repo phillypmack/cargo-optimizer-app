@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey'; // Usar a mesma chave do authService
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';
 
 interface UserPayload {
     userId: string;
@@ -13,28 +13,34 @@ interface UserPayload {
     email: string;
 }
 
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+// Estendemos a interface Request do Express para incluir nossa propriedade 'user'
+interface AuthenticatedRequest extends Request {
+    user?: UserPayload;
+}
+
+export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Espera "Bearer TOKEN"
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (token == null) {
-        return res.status(401).json({ message: 'Authentication token required.' }); // Não autorizado
+        res.status(401).json({ message: 'Authentication token required.' });
+        return; // Retornamos explicitamente para garantir que a função termine aqui
     }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            // Se o token for inválido ou expirado
-            return res.status(403).json({ message: 'Invalid or expired token.' }); // Proibido
+            res.status(403).json({ message: 'Invalid or expired token.' });
+            return; // Retornamos explicitamente
         }
-        // Adiciona as informações do usuário à requisição para uso em controladores posteriores
-        (req as any).user = user as UserPayload;
-        next(); // Continua para a próxima função middleware/controller
+        req.user = user as UserPayload;
+        next();
     });
 };
 
-export const authorizeAdmin = (req: Request, res: Response, next: NextFunction) => {
-    if (!(req as any).user || !(req as any).user.isAdmin) {
-        return res.status(403).json({ message: 'Admin access required.' });
+export const authorizeAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    if (!req.user || !req.user.isAdmin) {
+        res.status(403).json({ message: 'Admin access required.' });
+        return;
     }
     next();
 };
