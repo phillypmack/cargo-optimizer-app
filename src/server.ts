@@ -1,6 +1,6 @@
 // src/server.ts
-import app from './app.ts'
-import connectDB from './config/database';
+import app from './app.js';
+import connectDB from './config/database.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -13,7 +13,7 @@ connectDB().then(() => {
         console.log(`Servidor rodando na porta ${PORT}`);
         console.log(`Acesse: http://localhost:${PORT}`);
     });
-}).catch(err => {
+}).catch((err: unknown) => {
     console.error('Falha ao iniciar o servidor devido a erro no DB:', err);
     process.exit(1);
 });

@@ -1,7 +1,7 @@
 // src/config/passport-setup.ts
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import User from '../models/User'; // O import do modelo já deve estar correto
+import User from '../models/User.js'; // O import do modelo já deve estar correto
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -27,7 +27,7 @@ passport.use(
             callbackURL: `${process.env.SERVER_URL}/api/auth/google/callback`,
             passReqToCallback: true
         },
-        async (req, accessToken, refreshToken, profile, done) => {
+        async (_req, _accessToken, _refreshToken, profile, done) => {
             try {
                 const email = profile.emails?.[0].value;
                 if (!email) {

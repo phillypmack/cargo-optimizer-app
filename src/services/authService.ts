@@ -1,8 +1,8 @@
 // src/services/authService.ts
-import User from '../models/User';
+import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'; // NOVO: Módulo para gerar o token
-import { sendVerificationEmail } from './emailService'; // NOVO: Importa nosso serviço de e-mail
+import { sendVerificationEmail } from './emailService.js'; // NOVO: Importa nosso serviço de e-mail
 import dotenv from 'dotenv';
 
 dotenv.config();

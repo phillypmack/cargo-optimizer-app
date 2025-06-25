@@ -2,8 +2,8 @@
 import { Router } from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
-import { register, login, checkAuthStatus, verifyEmail } from '../controllers/authController';
-import { authenticateToken } from '../middleware/authMiddleware';
+import { register, login, checkAuthStatus, verifyEmail } from '../controllers/authController.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';

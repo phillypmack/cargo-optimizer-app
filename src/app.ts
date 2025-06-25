@@ -5,12 +5,11 @@ import session from 'express-session';
 import passport from 'passport';
 
 // 1. Importe a configuração do Passport PRIMEIRO.
-// Esta linha executa o código em 'passport-setup.ts', registrando a estratégia 'google'.
-import './config/passport-setup';
+import './config/passport-setup.js';
 
 // 2. Agora, importe suas rotas, que dependem da configuração acima.
-import authRoutes from './routes/authRoutes';
-import aiRoutes from './routes/aiRoutes';
+import authRoutes from './routes/authRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 
 
 const app = express();
@@ -35,7 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Rota de teste
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
     res.send('Cargo Optimizer Backend API is running!');
 });
 

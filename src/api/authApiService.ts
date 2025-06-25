@@ -9,7 +9,7 @@ const API_BASE_URL = 'http://localhost:5000/api/auth';
  * @param password A senha do usuário.
  * @returns A resposta da API em caso de sucesso.
  */
-export const registerUser = async (email, password) => {
+export const registerUser = async (email: string, password: string) => {
     const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: {
@@ -35,7 +35,7 @@ export const registerUser = async (email, password) => {
  * @param password A senha do usuário.
  * @returns A resposta da API.
  */
-export const loginUser = async (email, password) => {
+export const loginUser = async (email: string, password: string) => {
     const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
         headers: {
@@ -51,7 +51,7 @@ export const loginUser = async (email, password) => {
  * @param token O token JWT.
  * @returns A resposta da API com os dados do usuário.
  */
-export const checkAuthStatus = async (token) => {
+export const checkAuthStatus = async (token: string) => {
     const response = await fetch(`${API_BASE_URL}/status`, {
         method: 'GET',
         headers: {
@@ -67,7 +67,7 @@ export const checkAuthStatus = async (token) => {
  * @param token O token que o usuário recebeu por e-mail.
  * @returns A resposta da API com um novo token JWT.
  */
-export const verifyUserEmail = async (token) => {
+export const verifyUserEmail = async (token: string) => {
     const response = await fetch(`${API_BASE_URL}/verify-email`, {
         method: 'POST',
         headers: {

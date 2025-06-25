@@ -1,6 +1,15 @@
 // src/controllers/aiController.ts
 import { Request, Response } from 'express';
-import { generatePackingTips } from '../services/geminiService';
+import { generatePackingTips } from '../services/geminiService.js';
+
+interface ItemPayload {
+    name: string;
+    shape: string;
+    length: number;
+    width: number;
+    height: number;
+    quantity: number;
+}
 
 export const getPackingTipsController = async (req: Request, res: Response) => {
     try {
@@ -23,7 +32,7 @@ Container Configuration:
   - Height: ${containerConfig.height.toFixed(2)}m
 
 Item Details:\n`;
-        items.forEach((item, index) => {
+        items.forEach((item: ItemPayload, index: number) => {
             prompt += `Item ${index + 1} (User named: '${item.name}'):\n`;
             prompt += `- Shape: ${item.shape}\n`;
             prompt += `- Dimensions (L x W x H): ${item.length.toFixed(2)}m x ${item.width.toFixed(2)}m x ${item.height.toFixed(2)}m\n`;

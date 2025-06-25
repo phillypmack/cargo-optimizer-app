@@ -1,7 +1,7 @@
 // src/routes/aiRoutes.ts
 import { Router } from 'express';
-import { getPackingTipsController } from '../controllers/aiController';
-import { authenticateToken } from '../middleware/authMiddleware';
+import { getPackingTipsController } from '../controllers/aiController.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
