@@ -10,9 +10,9 @@ export interface IUser extends Document {
     authProvider: 'local' | 'google';
     displayName: string;
     isAdmin: boolean;
-    isEmailVerified: boolean; // NOVO
-    emailVerificationToken?: string; // NOVO
-    emailVerificationTokenExpires?: Date; // NOVO
+    isEmailVerified: boolean;
+    emailVerificationToken?: string;
+    emailVerificationTokenExpires?: Date;
     registeredAt: Date;
     lastLoginAt?: Date;
     comparePassword(candidatePassword: string): Promise<boolean>;
@@ -26,19 +26,19 @@ const UserSchema: Schema = new Schema({
     authProvider: { type: String, enum: ['local', 'google'], required: true },
     displayName: { type: String, required: true },
     isAdmin: { type: Boolean, default: false },
-    isEmailVerified: { type: Boolean, default: false }, // NOVO
-    emailVerificationToken: { type: String, select: false }, // NOVO
-    emailVerificationTokenExpires: { type: Date, select: false }, // NOVO
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, select: false },
+    emailVerificationTokenExpires: { type: Date, select: false },
     registeredAt: { type: Date, default: Date.now },
     lastLoginAt: { type: Date }
 });
 
-// ... (o restante do arquivo permanece o mesmo) ...
+// Middleware para hashear a senha antes de salvar
 UserSchema.pre('save', async function (next) {
-    const user = this as IUser;
-    if (user.isModified('password') && user.password) {
+    // A remoção da tipagem explícita 'as IUser' resolve o conflito de tipos.
+    if (this.isModified('password') && this.password) {
         const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
+        this.password = await bcrypt.hash(this.password, salt);
     }
     next();
 });

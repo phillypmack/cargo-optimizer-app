@@ -5,7 +5,8 @@ import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// Protegemos a rota com nosso middleware de autenticação
+// Rota protegida para obter dicas de empacotamento
+// CORREÇÃO: Passando o middleware e o controlador como argumentos separados
 router.post('/packing-tips', authenticateToken, getPackingTipsController);
 
 export default router;

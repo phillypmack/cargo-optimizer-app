@@ -13,7 +13,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/verify-email', verifyEmail);
 
-// Rota para o frontend verificar se o token JWT ainda é válido
+// CORREÇÃO: Passando o middleware e o controlador como argumentos separados
 router.get('/status', authenticateToken, checkAuthStatus);
 
 
@@ -23,14 +23,15 @@ router.get('/google', passport.authenticate('google', {
 }));
 
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login', session: false }),
-    (req, res) => {
-        const user: any = req.user;
+    (req: any, res) => { // Tipagem de 'req' como 'any' para acomodar a propriedade 'user' do passport
+        const user = req.user;
         const token = jwt.sign(
             { userId: user._id, isAdmin: user.isAdmin, email: user.email },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
-        res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+        // Redireciona para o frontend com o token
+        res.redirect(`${process.env.CLIENT_URL}?token=${token}`);
     }
 );
 
