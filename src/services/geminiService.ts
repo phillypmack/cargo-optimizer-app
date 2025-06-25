@@ -1,9 +1,6 @@
 // src/services/geminiService.ts
-import pkg from '@google/genai';
+import { GoogleGenerativeAI } from '@google/genai';
 import dotenv from 'dotenv';
-
-// Extrai a classe necessária do pacote importado
-const { GoogleGenerativeAI } = pkg;
 
 dotenv.config();
 
@@ -15,11 +12,6 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
-/**
- * Gera dicas de empacotamento usando um prompt fornecido.
- * @param {string} prompt - O prompt completo a ser enviado para a API Gemini.
- * @returns {Promise<string>} A resposta em texto da API.
- */
 export const generatePackingTips = async (prompt: string): Promise<string> => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
