@@ -1,5 +1,5 @@
 // src/services/geminiService.ts
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/genai';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,6 +10,7 @@ if (!apiKey) {
     throw new Error('GEMINI_API_KEY não está definida no ambiente do servidor.');
 }
 
+// A instância é criada com a chave da API diretamente
 const genAI = new GoogleGenerativeAI(apiKey);
 
 /**
@@ -19,9 +20,10 @@ const genAI = new GoogleGenerativeAI(apiKey);
  */
 export const generatePackingTips = async (prompt: string): Promise<string> => {
     try {
+        // Obtenha o modelo generativo a partir da instância
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
         const result = await model.generateContent(prompt);
-        const response = result.response;
+        const response = await result.response;
         return response.text();
     } catch (error) {
         console.error("Erro ao chamar a API Gemini:", error);

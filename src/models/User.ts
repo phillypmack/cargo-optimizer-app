@@ -33,12 +33,13 @@ const UserSchema: Schema = new Schema({
     lastLoginAt: { type: Date }
 });
 
-// Middleware para hashear a senha antes de salvar
 UserSchema.pre('save', async function (next) {
-    // A remoção da tipagem explícita 'as IUser' resolve o conflito de tipos.
-    if (this.isModified('password') && this.password) {
+    // Usamos 'any' para evitar problemas com a tipagem de 'this' dentro do hook do Mongoose
+    const user = this as any;
+    if (user.isModified('password') && user.password) {
         const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
+        // Garantimos que o password seja uma string antes de fazer o hash
+        user.password = await bcrypt.hash(String(user.password), salt);
     }
     next();
 });

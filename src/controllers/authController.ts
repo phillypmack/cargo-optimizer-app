@@ -5,18 +5,20 @@ import { registerUser, loginUser, googleLoginUser, verifyEmailToken } from '../s
 /**
  * Registra um novo usuário local.
  */
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required.' });
+            res.status(400).json({ message: 'Email and password are required.' });
+            return;
         }
         await registerUser(email, password);
         res.status(201).json({ message: 'Registration successful! Please check your email to verify your account.' });
     } catch (error: any) {
         console.error('Registration error:', error);
         if (error.message.includes('User with this email already exists.')) {
-            return res.status(409).json({ message: error.message });
+            res.status(409).json({ message: error.message });
+            return;
         }
         res.status(500).json({ message: 'Server error during registration.' });
     }
@@ -25,11 +27,12 @@ export const register = async (req: Request, res: Response) => {
 /**
  * Realiza o login de um usuário local.
  */
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required.' });
+            res.status(400).json({ message: 'Email and password are required.' });
+            return;
         }
         const token = await loginUser(email, password);
         res.status(200).json({ token, message: 'Login successful!' });
@@ -42,11 +45,12 @@ export const login = async (req: Request, res: Response) => {
 /**
  * Realiza o login com Google.
  */
-export const googleLogin = async (req: Request, res: Response) => {
+export const googleLogin = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email } = req.body;
         if (!email) {
-            return res.status(400).json({ message: 'Email is required for Google login.' });
+            res.status(400).json({ message: 'Email is required for Google login.' });
+            return;
         }
         const token = await googleLoginUser(email);
         res.status(200).json({ token, message: 'Google login successful!' });
@@ -59,11 +63,12 @@ export const googleLogin = async (req: Request, res: Response) => {
 /**
  * Verifica o token de verificação de e-mail.
  */
-export const verifyEmail = async (req: Request, res: Response) => {
+export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
     try {
         const { token } = req.body;
         if (!token) {
-            return res.status(400).json({ message: 'Token is required.' });
+            res.status(400).json({ message: 'Token is required.' });
+            return;
         }
         const jwtToken = await verifyEmailToken(token);
         res.status(200).json({ token: jwtToken, message: 'Email verified successfully! You are now logged in.' });
@@ -75,20 +80,18 @@ export const verifyEmail = async (req: Request, res: Response) => {
 /**
  * Verifica o status de autenticação de um usuário com um token JWT válido.
  */
-export const checkAuthStatus = async (req: Request, res: Response) => {
-    // A interface customizada para Request pode não estar disponível aqui, usamos 'any' para segurança de tipo.
-    // O 'req.user' é adicionado pelo middleware 'authenticateToken'.
+export const checkAuthStatus = async (req: Request, res: Response): Promise<void> => {
     const user = (req as any).user;
 
     if (user) {
-        return res.status(200).json({
+        res.status(200).json({
             isAuthenticated: true,
             isAdmin: user.isAdmin,
             userEmail: user.email,
             message: 'User is authenticated.'
         });
     } else {
-        return res.status(401).json({
+        res.status(401).json({
             isAuthenticated: false,
             message: 'User is not authenticated.'
         });
