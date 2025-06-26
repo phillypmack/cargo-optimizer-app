@@ -7,10 +7,9 @@ import passport from 'passport';
 // 1. Importe a configuração do Passport PRIMEIRO.
 import './config/passport-setup.js';
 
-// 2. Agora, importe suas rotas, que dependem da configuração acima.
+// 2. Agora, importe suas rotas.
 import authRoutes from './routes/authRoutes.js';
-import aiRoutes from './routes/aiRoutes.js';
-
+// import aiRoutes from './routes/aiRoutes.js'; // ROTA DA IA DESATIVADA TEMPORARIAMENTE
 
 const app = express();
 
@@ -31,7 +30,7 @@ app.use(passport.session());
 
 // Rotas
 app.use('/api/auth', authRoutes);
-app.use('/api/ai', aiRoutes);
+// app.use('/api/ai', aiRoutes); // USO DA ROTA DA IA DESATIVADO TEMPORARIAMENTE
 
 // Rota de teste
 app.get('/', (_req, res) => {
